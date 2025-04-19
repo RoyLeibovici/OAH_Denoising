@@ -44,7 +44,19 @@ def process_frames(frames_dir, masks_dir, output_dir, patch_size=64, mask_thresh
             # Extract cells using the mask
             mask_gray = cv2.cvtColor(mask, cv2.COLOR_RGBA2GRAY)
             cell_mask = mask_gray  # Binary mask: 1 where cell is present, 0 elsewhere
-            cells = frame[cell_mask]  # Extract the pixels of the cells.
+            unique_values = np.unique(cell_mask)
+            for value in unique_values:
+                if value != 175:
+                    cell_mask = mask_gray == value  # Create a mask for the current cell value
+                    cell = np.zeros_like(frame)
+                    cell[mask] = frame[cell_mask]
+
+                    if cell.size > 0:  # Check if cell is not empty
+                        print(f"Shape of cell with value {value}: {cell.shape}")
+                        plt.imshow(cell, cmap='gray')  # Display the cell image
+                        plt.title(f"Cell with mask value: {value}")
+                        plt.show()
+            cells = frame[cell_mask!=175]  # Extract the pixels of the cells.
 
             if cells.size > 0: #check if any cells were found
                 cells_filename = f"cells_{frame_num}.png"
@@ -63,7 +75,7 @@ def process_frames(frames_dir, masks_dir, output_dir, patch_size=64, mask_thresh
             for y in range(0, frame_height - patch_size + 1, patch_size):
                 for x in range(0, frame_width - patch_size + 1, patch_size):
                     sub_mask = mask_gray[y:y + patch_size, x:x + patch_size]
-                    mask_area = np.sum(sub_mask > 0)  # Count non-zero pixels in the sub_mask
+                    mask_area = np.sum(sub_mask != 0)  # Count non-zero pixels in the sub_mask
                     patch_area = patch_size * patch_size
                     mask_percentage = (mask_area / patch_area) * 100
 
