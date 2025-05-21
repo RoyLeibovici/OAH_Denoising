@@ -24,11 +24,11 @@ def segment_median_and_sort_primal(median_frames_dir, primal_frames_dir, output_
 
     # Prepare output folders
     masks_dir = os.path.join(output_dir, "masks")
-    cells_dir = os.path.join(output_dir, "cells")
-    background_dir = os.path.join(output_dir, "background")
+    with_mask_dir = os.path.join(output_dir, "frames with mask")
+    no_mask_dir = os.path.join(output_dir, "frames without mask")
     os.makedirs(masks_dir, exist_ok=True)
-    os.makedirs(cells_dir, exist_ok=True)
-    os.makedirs(background_dir, exist_ok=True)
+    os.makedirs(with_mask_dir, exist_ok=True)
+    os.makedirs(no_mask_dir, exist_ok=True)
 
     # Gather median-subtracted frame list
     frame_files = sorted([f for f in os.listdir(median_frames_dir) if f.endswith(".png")])
@@ -80,7 +80,7 @@ def segment_median_and_sort_primal(median_frames_dir, primal_frames_dir, output_
     # Save masks and sort frames into folders
     for frame_file in frames_with_masks:
         primal_path = os.path.join(primal_frames_dir, frame_file)
-        shutil.copy(primal_path, os.path.join(cells_dir, frame_file))
+        shutil.copy(primal_path, os.path.join(with_mask_dir, frame_file))
 
         mask = masks_by_frame[frame_file]
         mask_filename = frame_file.replace(".png", ".npy")
@@ -88,7 +88,7 @@ def segment_median_and_sort_primal(median_frames_dir, primal_frames_dir, output_
 
     for frame_file in frames_without_masks:
         primal_path = os.path.join(primal_frames_dir, frame_file)
-        shutil.copy(primal_path, os.path.join(background_dir, frame_file))
+        shutil.copy(primal_path, os.path.join(no_mask_dir, frame_file))
 
     print(f"Done! {len(frames_with_masks)} with masks, {len(frames_without_masks)} without masks.")
 
