@@ -23,8 +23,11 @@ def crop_cells(primal_frames_dir, masks_dir, output_dir):
         frame_path = os.path.join(primal_frames_dir, frame_file)
         mask_path = os.path.join(masks_dir, mask_file)
 
-        frame = cv2.imread(frame_path)
+        frame = cv2.imread(frame_path, cv2.IMREAD_GRAYSCALE)
         mask = np.load(mask_path)
+
+        # Get frame name without extension
+        frame_name_no_ext = os.path.splitext(frame_file)[0]
 
         n_cells = mask.max()
         for cell_id in range(1, n_cells + 1):
@@ -38,17 +41,19 @@ def crop_cells(primal_frames_dir, masks_dir, output_dir):
             x_min, x_max = x_indices.min(), x_indices.max()
 
             # Crop from the primal frame
-            cell_crop = frame[y_min:y_max+1, x_min:x_max+1]
+            cell_crop = frame[y_min:y_max + 1, x_min:x_max + 1]
 
-            # Save the cropped image
-            crop_filename = f"frame_{frame_idx:06d}_cell_{cell_id:04d}.png"
+            # Generate crop filename
+            crop_filename = f"{frame_name_no_ext}_cell_{cell_id:04d}.png"
             crop_path = os.path.join(output_dir, crop_filename)
             cv2.imwrite(crop_path, cell_crop)
 
             # Save metadata
             metadata.append({
                 "frame_index": frame_idx,
+                "frame_name": frame_file,
                 "cell_index": cell_id,
+                "crop_filename": crop_filename,
                 "x_min": int(x_min),
                 "y_min": int(y_min),
                 "x_max": int(x_max),
@@ -60,7 +65,8 @@ def crop_cells(primal_frames_dir, masks_dir, output_dir):
     metadata_df.to_csv(os.path.join(output_dir, "metadata.csv"), index=False)
 
 # ========== USAGE ==========
-# Set your original frames (with mask) folder, masks folder and output directory manually here
+
+# Set your original frames folder, masks folder and output directory manually here
 primal_frames = r"D:\JetBrains\PycharmProjects\OAH_shlomi\pythonProject1\SegSortByMedian\frames with mask"
 masks = r"D:\JetBrains\PycharmProjects\OAH_shlomi\pythonProject1\SegSortByMedian\masks"
 output_dir = r"D:\JetBrains\PycharmProjects\OAH_shlomi\pythonProject1\crops"
