@@ -16,7 +16,9 @@ frame_files = sorted([f for f in os.listdir(frames_path) if f.endswith(".png")])
 mask_files = sorted([f for f in os.listdir(masks_path) if f.endswith(".npy")])
 
 # Process each frame and its corresponding mask
+i = 0
 for frame_file, mask_file in zip(frame_files, mask_files):
+    print(f"Processing frame {i} out of {len(frame_files)}")
     # Load frame image
     frame_path = os.path.join(frames_path, frame_file)
     frame = cv2.imread(frame_path)
@@ -47,16 +49,15 @@ for frame_file, mask_file in zip(frame_files, mask_files):
 
 
 
-
 # Parameters
 n = 64  # sub-image size
 k = 32  # stride
 threshold = 0.05  # max fraction of non-background pixels
 
 # Paths
-frames_path = r'G:\My Drive\Shlomi and Roy\Final Project\videos\shlomi\SegSortByMedian\cells'
-masks_path = r'G:\My Drive\Shlomi and Roy\Final Project\videos\shlomi\SegSortByMedian\masks'
-bg_path = r'G:\My Drive\Shlomi and Roy\Final Project\videos\shlomi\SegSortByMedian\bg'
+frames_path = r'G:\My Drive\Shlomi and Roy\Final Project\videos\shlomi\SegSortByOriginal\cells'
+masks_path = r'G:\My Drive\Shlomi and Roy\Final Project\videos\shlomi\SegSortByOriginal\masks'
+bg_path = r'G:\My Drive\Shlomi and Roy\Final Project\videos\shlomi\SegSortByOriginal\bg'
 
 os.makedirs(bg_path, exist_ok=True)
 

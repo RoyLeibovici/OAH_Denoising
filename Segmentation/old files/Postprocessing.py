@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+
 def process_frames(frames_dir, masks_dir, output_dir, patch_size=64, mask_threshold_percentage=5):
     """
     Processes frame and mask images to extract cell regions and background patches.
