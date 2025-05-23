@@ -93,8 +93,6 @@ def resize_cells(filtered_cells_dir, output_dir, target_size=(128, 128)):
         output_path = os.path.join(output_dir, crop_file)
         cv2.imwrite(output_path, resized_img)
 
-
-
 def plot_histogram_of_cell_dimensions(crop_dir):
     """
     Plots a histogram of the dimensions of cropped cell images.
