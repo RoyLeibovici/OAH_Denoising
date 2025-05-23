@@ -3,7 +3,9 @@ import numpy as np
 import cv2
 import pandas as pd
 
-def crop_cells(primal_frames_dir, masks_dir, output_dir):
+def crop_cells(primal_frames_dir, masks_dir, video_dir):
+
+    output_dir = os.path.join(video_dir, "original cells")
     os.makedirs(output_dir, exist_ok=True)
 
     metadata = []
@@ -40,8 +42,15 @@ def crop_cells(primal_frames_dir, masks_dir, output_dir):
             y_min, y_max = y_indices.min(), y_indices.max()
             x_min, x_max = x_indices.min(), x_indices.max()
 
+            # Crop a bit wider than the cell's size
+            padding = 15
+            x_min_p = max(x_min - padding, 0)
+            y_min_p = max(y_min - padding, 0)
+            x_max_p = min(x_max + padding, frame.shape[1] - 1)
+            y_max_p = min(y_max + padding, frame.shape[0] - 1)
+
             # Crop from the primal frame
-            cell_crop = frame[y_min:y_max + 1, x_min:x_max + 1]
+            cell_crop = frame[y_min_p : y_max_p + 1, x_min_p : x_max_p + 1]
 
             # Generate crop filename
             crop_filename = f"{frame_name_no_ext}_cell_{cell_id:04d}.png"
@@ -62,13 +71,4 @@ def crop_cells(primal_frames_dir, masks_dir, output_dir):
 
     # Save metadata to CSV
     metadata_df = pd.DataFrame(metadata)
-    metadata_df.to_csv(os.path.join(output_dir, "metadata.csv"), index=False)
-
-# ========== USAGE ==========
-
-# Set your original frames folder, masks folder and output directory manually here
-primal_frames = r"D:\JetBrains\PycharmProjects\OAH_shlomi\pythonProject1\SegSortByMedian\frames with mask"
-masks = r"D:\JetBrains\PycharmProjects\OAH_shlomi\pythonProject1\SegSortByMedian\masks"
-output_dir = r"D:\JetBrains\PycharmProjects\OAH_shlomi\pythonProject1\crops"
-
-crop_cells(primal_frames, masks, output_dir)
+    metadata_df.to_csv(os.path.join(video_dir, "metadata.csv"), index=False)

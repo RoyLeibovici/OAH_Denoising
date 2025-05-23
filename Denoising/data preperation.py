@@ -1,1 +1,0 @@
-"""discard cells where the ratio between the height and width is greater than 2"""
