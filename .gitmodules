@@ -1,0 +1,3 @@
+[submodule "src/Segmentation/CellSAM"]
+	path = src/Segmentation/CellSAM
+	url = https://github.com/vanvalenlab/cellSAM.git
