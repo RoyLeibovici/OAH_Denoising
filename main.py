@@ -63,16 +63,16 @@ def validate_arguments(args):
         print(f"Error: Input path '{args.input}' is neither a file nor directory.", file=sys.stderr)
         sys.exit(1)
 
-    # Create output directory if it doesn't exist
+    # Create work directory if it doesn't exist
     try:
-        os.makedirs(args.output, exist_ok=True)
+        os.makedirs(args.workdir, exist_ok=True)
     except OSError as e:
-        print(f"Error: Cannot create output directory '{args.output}': {e}", file=sys.stderr)
+        print(f"Error: Cannot create work directory '{args.workdir}': {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Check if output directory is writable
-    if not os.access(args.output, os.W_OK):
-        print(f"Error: Output directory '{args.output}' is not writable.", file=sys.stderr)
+    # Check if work directory is writable
+    if not os.access(args.workdir, os.W_OK):
+        print(f"Error: Work directory '{args.workdir}' is not writable.", file=sys.stderr)
         sys.exit(1)
 
 
@@ -86,22 +86,25 @@ def main():
 
     # Print parsed arguments (remove this in production)
     print(f"Input path: {args.input}")
-    print(f"Output/Working directory: {args.output}")
+    print(f"Output/Working directory: {args.workdir}")
     print(f"Mode: {args.mode}")
 
     # Your main application logic goes here
     if args.mode == 'train':
         print("Running in training mode...")
-        # Add your training logic
+        # Add train logic
     elif args.mode == 'cells':
         print("Running in cells mode...")
-        # Add your cells processing logic
+        # Add cells logic
+    elif args.mode == 'cells-resize':
+        print("Running in cells-resize mode...")
+        # Add cells-resize logic
     elif args.mode == 'frames':
         print("Running in frames mode...")
-        # Add your frames processing logic
+        # Add frames processing logic
     elif args.mode == 'video':
         print("Running in video mode...")
-        # Add your video processing logic
+        # Add video processing logic
 
 
 if __name__ == "__main__":
