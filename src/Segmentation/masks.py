@@ -185,3 +185,19 @@ def segment_and_sort_frames_batched(frames_dir, output_dir, batch_size=100):
               f"{len(frames_with_masks)} with masks, {len(frames_without_masks)} without.")
 
     print("\nAll batches processed and saved!")
+
+    # Write segmentation log from saved output folders
+    log_path = os.path.join(output_dir, "segmentation_log.txt")
+
+    with_mask_files = sorted(os.listdir(with_mask_dir))
+    no_mask_files = sorted(os.listdir(no_mask_dir))
+
+    with open(log_path, "w") as f:
+        f.write(f"{'WITH_MASK':<25} | {'NO_MASK':<25}\n")
+        f.write(f"{'-'*25}-+-{'-'*25}\n")
+
+        max_len = max(len(with_mask_files), len(no_mask_files))
+        for i in range(max_len):
+            mask_frame = with_mask_files[i] if i < len(with_mask_files) else ""
+            no_mask_frame = no_mask_files[i] if i < len(no_mask_files) else ""
+            f.write(f"{mask_frame:<25} | {no_mask_frame:<25}\n")
