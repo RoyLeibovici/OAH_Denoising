@@ -100,3 +100,104 @@ def segment_and_sort_frames(frames_dir, output_dir):
             no_mask_frame = frames_without_masks[i] if i < len(frames_without_masks) else ""
             f.write(f"{mask_frame:<25} | {no_mask_frame:<25}\n")
 
+def segment_and_sort_frames_batched(frames_dir, output_dir, batch_size=100):
+    """
+    Segments frames in batches, saves after each batch, and maintains a runtime log
+    to allow resuming from the last checkpoint.
+    """
+
+    # Output dirs
+    masks_dir = os.path.join(output_dir, "masks")
+    with_mask_dir = os.path.join(output_dir, "frames with mask")
+    no_mask_dir = os.path.join(output_dir, "frames without mask")
+    os.makedirs(masks_dir, exist_ok=True)
+    os.makedirs(with_mask_dir, exist_ok=True)
+    os.makedirs(no_mask_dir, exist_ok=True)
+
+    # Runtime log path
+    runtime_log_path = os.path.join(output_dir, "runtime_log.txt")
+
+    # Load already processed frames
+    processed_frames = set()
+    if os.path.exists(runtime_log_path):
+        with open(runtime_log_path, "r") as f:
+            processed_frames = set(line.strip() for line in f if line.strip())
+
+    # Gather all frames
+    frame_files = sorted([f for f in os.listdir(frames_dir) if f.endswith(".png")])
+
+    # Filter out already processed ones
+    frame_files = [f for f in frame_files if f not in processed_frames]
+    total_to_process = len(frame_files)
+    print(f"Found {total_to_process} unprocessed frame(s) in {frames_dir}...")
+
+    # Process in batches
+    for start_idx in range(0, total_to_process, batch_size):
+        batch = frame_files[start_idx:start_idx + batch_size]
+        print(f"\nProcessing batch {start_idx}–{start_idx + len(batch) - 1}...")
+
+        frames_with_masks = []
+        frames_without_masks = []
+        masks_by_frame = {}
+
+        for frame_file in batch:
+            frame_path = os.path.join(frames_dir, frame_file)
+
+            img_gray = cv2.imread(frame_path, cv2.IMREAD_GRAYSCALE)
+            if img_gray is None:
+                print(f"[WARNING] Could not read {frame_file} — skipping.")
+                continue
+
+            img_rgb = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2RGB)
+
+            try:
+                mask = cellsam_pipeline(
+                    img_rgb,
+                    use_wsi=False,
+                    low_contrast_enhancement=False,
+                    gauge_cell_size=False,
+                )
+
+                if isinstance(mask, np.ndarray):
+                    frames_with_masks.append(frame_file)
+                    masks_by_frame[frame_file] = mask
+                else:
+                    frames_without_masks.append(frame_file)
+
+            except Exception as e:
+                print(f"[ERROR] Failed processing {frame_file}: {e}")
+                frames_without_masks.append(frame_file)
+
+        # Save batch results
+        for frame_file in frames_with_masks:
+            shutil.copy(os.path.join(frames_dir, frame_file), os.path.join(with_mask_dir, frame_file))
+            np.save(os.path.join(masks_dir, frame_file.replace(".png", ".npy")), masks_by_frame[frame_file])
+
+        for frame_file in frames_without_masks:
+            shutil.copy(os.path.join(frames_dir, frame_file), os.path.join(no_mask_dir, frame_file))
+
+        # Update runtime log
+        with open(runtime_log_path, "a") as f:
+            for frame_file in (frames_with_masks + frames_without_masks):
+                f.write(frame_file + "\n")
+
+        print(f"Batch {start_idx}–{start_idx + len(batch) - 1} done: "
+              f"{len(frames_with_masks)} with masks, {len(frames_without_masks)} without.")
+
+    print("\nAll batches processed and saved!")
+
+    # Write segmentation log from saved output folders
+    log_path = os.path.join(output_dir, "segmentation_log.txt")
+
+    with_mask_files = sorted(os.listdir(with_mask_dir))
+    no_mask_files = sorted(os.listdir(no_mask_dir))
+
+    with open(log_path, "w") as f:
+        f.write(f"{'WITH_MASK':<25} | {'NO_MASK':<25}\n")
+        f.write(f"{'-'*25}-+-{'-'*25}\n")
+
+        max_len = max(len(with_mask_files), len(no_mask_files))
+        for i in range(max_len):
+            mask_frame = with_mask_files[i] if i < len(with_mask_files) else ""
+            no_mask_frame = no_mask_files[i] if i < len(no_mask_files) else ""
+            f.write(f"{mask_frame:<25} | {no_mask_frame:<25}\n")

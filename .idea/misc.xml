@@ -3,4 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.10 (OAH_Denoising)" />
   </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="OAH_Denoising" project-jdk-type="Python SDK" />
 </project>
