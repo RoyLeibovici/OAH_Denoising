@@ -1,6 +1,13 @@
 import argparse
 import sys
 import os
+from pathlib import Path
+from src.Denoising.autoencoder import ConvAutoencoder_gated
+from src.Denoising.eval_denoising import evaluate_autoencoder
+from src.Denoising.data_preperation import resize_cells, discard_cells
+from src.Segmentation.masks import segment_and_sort_frames_batched
+from src.Segmentation.extract_cells import crop_cells
+from src.Segmentation.sample_video import sample_frames
 
 
 def create_parser():
@@ -84,27 +91,63 @@ def main():
     # Validate arguments
     validate_arguments(args)
 
-    # Print parsed arguments (remove this in production)
     print(f"Input path: {args.input}")
     print(f"Output/Working directory: {args.workdir}")
     print(f"Mode: {args.mode}")
+    weights_path = Path("Denoising") / "weights" / "denoiser.weights.pth"
 
-    # Your main application logic goes here
     if args.mode == 'train':
         print("Running in training mode...")
         # Add train logic
     elif args.mode == 'cells':
         print("Running in cells mode...")
-        # Add cells logic
+        evaluate_autoencoder(ConvAutoencoder_gated, weights_path, args.input, args.workdir)
+
     elif args.mode == 'cells-resize':
         print("Running in cells-resize mode...")
-        # Add cells-resize logic
+        resized_cells_path = Path(args.workdir) / 'resized input'
+        resize_cells(args.input, resized_cells_path)
+        evaluate_autoencoder(ConvAutoencoder_gated, weights_path, resized_cells_path, args.workdir)
+
     elif args.mode == 'frames':
         print("Running in frames mode...")
-        # Add frames processing logic
+        segment_and_sort_frames_batched(args.input, args.workdir)
+
+        frames_with_masks_path = Path(args.workdir, "frames with mask")
+        frames_with_masks_path.mkdir(parents=True, exist_ok=True)
+        masks_path = Path(args.workdir, "masks")
+        masks_path.mkdir(parents=True, exist_ok=True)
+
+        crop_cells(frames_with_masks_path, masks_path, args.workdir)
+        cropped_cells_path = Path(args.workdir) / 'original cells'
+        filtered_cells_path = Path(args.workdir) / 'filtered cells'
+        discard_cells(cropped_cells_path, filtered_cells_path, min_dim=30)
+
+        resized_cells_path = Path(args.workdir) / 'resized input'
+        resize_cells(filtered_cells_path, resized_cells_path)
+
+        evaluate_autoencoder(ConvAutoencoder_gated, weights_path, resized_cells_path, args.workdir)
+
     elif args.mode == 'video':
         print("Running in video mode...")
-        # Add video processing logic
+        _, frames_path = sample_frames(args.input, args.workdir)
+        segment_and_sort_frames_batched(frames_path, args.workdir)
+
+        frames_with_masks_path = Path(args.workdir, "frames with mask")
+        frames_with_masks_path.mkdir(parents=True, exist_ok=True)
+        masks_path = Path(args.workdir, "masks")
+        masks_path.mkdir(parents=True, exist_ok=True)
+
+        crop_cells(frames_with_masks_path, masks_path, args.workdir)
+        cropped_cells_path = Path(args.workdir) / 'original cells'
+        filtered_cells_path = Path(args.workdir) / 'filtered cells'
+        discard_cells(cropped_cells_path, filtered_cells_path, min_dim=30)
+
+        resized_cells_path = Path(args.workdir) / 'resized input'
+        resize_cells(filtered_cells_path, resized_cells_path)
+
+        evaluate_autoencoder(ConvAutoencoder_gated, weights_path, resized_cells_path, args.workdir)
+
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from sample_video import sample_frames
-from masks import segment_and_sort_frames
+from masks import segment_and_sort_frames_batched
 from extract_cells import crop_cells
 from pathlib import Path
 
@@ -13,7 +13,7 @@ Output_files = Path(Data_path, "Output_files")
 
 for video_path in Videos_path.glob("*.AVI"):
     video_outputs, frames_path = sample_frames(video_path, Output_files, sampling_rate=1)
-    # segment_and_sort_frames(frames_path, video_outputs)
+    # segment_and_sort_frames_batched(frames_path, video_outputs)
 
     frames_with_masks_path = Path(video_outputs, "frames with mask")
     masks_path = Path(video_outputs, "masks")

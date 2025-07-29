@@ -2,7 +2,7 @@ import os
 import shutil
 import numpy as np
 import cv2
-from cellSAM import cellsam_pipeline
+from CellSAM.cellSAM.cellsam_pipeline import cellsam_pipeline
 
 
 def segment_and_sort_frames(frames_dir, output_dir):

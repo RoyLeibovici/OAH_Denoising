@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def discard_cells(crop_dir, output_dir):
+def discard_cells(crop_dir, output_dir, min_dim=75):
     """
     Discards cells where the ratio between the height and width is greater than 2.
     Saves the remaining cells in a new directory.
@@ -34,7 +34,7 @@ def discard_cells(crop_dir, output_dir):
         if h > 1.5 * w or w > 1.5 * h:
             print(f"[INFO] Discarding {crop_file} due to aspect ratio.")
             continue
-        elif h <= 75 or w <= 75:
+        elif h <= min_dim or w <= min_dim:
             print(f"[INFO] Discarding {crop_file} due to small dimensions.")
             continue
 
@@ -92,7 +92,7 @@ def resize_cells(filtered_cells_dir, output_dir, target_size=(128, 128)):
         output_path = os.path.join(output_dir, crop_file)
         cv2.imwrite(output_path, resized_img)
 
-def plot_histogram_of_cell_dimensions(crop_dir):
+def plot_histogram_of_cell_dimensions(crop_dir): # Used to find the most correct min_dim to filter with
     """
     Plots a histogram of the dimensions of cropped cell images.
 
