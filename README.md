@@ -25,7 +25,6 @@ OAH_Denoising/
 │ └── init.py   
 ├── main.py # Entry point for processing    
 ├── requirements.txt # Python dependencies  
-├── pyproject.toml # Build/system configuration 
 ├── .gitmodules # CellSAM dependency (submodule)    
 └── README.md # 
 
